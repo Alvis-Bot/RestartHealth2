@@ -9,7 +9,7 @@ import {
 import { GatewaySessionManager } from "./gateway.session";
 import * as ws from "ws";
 @Injectable()
-@WebSocketGateway(3010)
+@WebSocketGateway()
 export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer()
