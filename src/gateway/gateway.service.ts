@@ -5,6 +5,7 @@ import { GatewaySessionManager } from "./gateway.session";
 
 @Injectable()
 @WebSocketGateway({
+  transports: ['websocket'],
   cors: {
     origin: '*',
   },
