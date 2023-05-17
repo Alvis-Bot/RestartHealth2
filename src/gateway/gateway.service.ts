@@ -12,6 +12,7 @@ import { GatewaySessionManager } from "./gateway.session";
 @Injectable()
 @WebSocketGateway({
   transports: ['websocket'],
+  wsEngine: 'ws',
   cors: {
     origin: '*',
   },
