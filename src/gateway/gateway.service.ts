@@ -1,37 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+  OnGatewayConnection, OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer, WsResponse
+  WebSocketServer,
+  WsResponse
 } from "@nestjs/websockets";
-import { Server  } from 'ws';
 import { GatewaySessionManager } from "./gateway.session";
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import * as ws from "ws";
 @Injectable()
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
+@WebSocketGateway(3010)
 export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect {
 
-
   @WebSocketServer()
-  server: Server;
+  server: ws.Server;
+
   constructor(private readonly sessions: GatewaySessionManager) {
   }
-  handleConnection(client: any, ...args: any[]): any {
+  private readonly sessionsss : Map<number , ws.Server> = new Map<number, ws.Server>();
+  private
+  handleConnection(client: ws.WebSocket, ...args: any[]): any {
     console.log('client connected');
-    console.log(client);
+    client.send('hello');
   }
 
-  @SubscribeMessage('events')
+  @SubscribeMessage('message')
   onEvent(client: any, data: any) {
     console.log('onEvent' ,data);
+    const sockets = this.sessionsss.get(1);
+    this.server.clients.forEach((client) => {
+      client.send(JSON.stringify(data));
+    });
   }
+
 
   handleDisconnect(client: any): any {
     console.log('client disconnected');
