@@ -4,15 +4,14 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer
+  WebSocketServer, WsResponse
 } from "@nestjs/websockets";
-import { Server, Socket } from 'socket.io';
+import { Server  } from 'ws';
 import { GatewaySessionManager } from "./gateway.session";
-
+import { from, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 @Injectable()
 @WebSocketGateway({
-  transports: ['websocket'],
-  wsEngine: 'ws',
   cors: {
     origin: '*',
   },
@@ -24,22 +23,19 @@ export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect
   server: Server;
   constructor(private readonly sessions: GatewaySessionManager) {
   }
-  handleConnection(client: Socket, ...args: any[]): any {
+  handleConnection(client: any, ...args: any[]): any {
     console.log('client connected');
-    console.log(client.id);
-    this.sessions.setUserSocketId(1, client.id);
+    console.log(client);
   }
 
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, message: string) {
-    console.log('Received message from client: ' + message);
-    this.server.emit('message', 'Server received your message: ' + message);
+  @SubscribeMessage('events')
+  onEvent(client: any, data: any) {
+    console.log('onEvent' ,data);
   }
 
-  handleDisconnect(client: Socket): any {
+  handleDisconnect(client: any): any {
     console.log('client disconnected');
-    console.log(client.id);
-    this.sessions.removeSocketId(1, client.id);
+    console.log(client);
   }
 
 }
