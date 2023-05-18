@@ -6,8 +6,8 @@ import {
   WebSocketServer,
   WsResponse
 } from "@nestjs/websockets";
-import { GatewaySessionManager } from "./gateway.session";
 import * as ws from "ws";
+import { GatewaySessionManager } from "./gateway.session";
 @Injectable()
 @WebSocketGateway()
 export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect {
@@ -17,24 +17,32 @@ export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect
 
   constructor(private readonly sessions: GatewaySessionManager) {
   }
-  private readonly sessionsss : Map<number , ws.Server> = new Map<number, ws.Server>();
+
   private
-  handleConnection(client: ws.WebSocket, ...args: any[]): any {
+  handleConnection(client: ws.WebSocket, ...args: any[])  {
     console.log('client connected');
+    console.log(client);
     client.send('hello');
+  }
+
+  @SubscribeMessage('info')
+  handleMessage(client: ws.WebSocket, payload: any){
+    console.log('handleMessage', payload);
+    this.server.clients.forEach((c) => {
+      if (c !== client) {
+        console.log('send to client');
+        c.send(JSON.stringify(payload));
+      }
+    });
   }
 
   @SubscribeMessage('message')
   onEvent(client: any, data: any) {
     console.log('onEvent' ,data);
-    const sockets = this.sessionsss.get(1);
-    this.server.clients.forEach((client) => {
-      client.send(JSON.stringify(data));
-    });
   }
 
 
-  handleDisconnect(client: any): any {
+  handleDisconnect(client: ws.WebSocket): any {
     console.log('client disconnected');
     console.log(client);
   }

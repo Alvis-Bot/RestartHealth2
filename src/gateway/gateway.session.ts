@@ -1,31 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import * as ws from "ws";
 
 @Injectable()
 export class GatewaySessionManager {
-  private readonly sessions: Map<number, string[]> = new Map<
-    number,
-    string[]
-  >();
-  getUserSocket(id: number) {
-    return this.sessions.get(id);
+  private readonly sessions : Map<string , ws.Server> = new Map<string, ws.Server>();
+  getUserSocket(value: string) {
+    return this.sessions.get(value);
   }
 
-  setUserSocketId(id: number, socket: string) {
-    this.sessions.set(id, [...(this.sessions.get(id) || []), socket]);
+  setUserSocketId(value: string, socket: ws.Server) {
+    this.sessions.set(value, socket);
   }
 
-  removeUserSocketId(id: number) {
-    this.sessions.delete(id);
+  removeUserSocketId(value: string) {
+    this.sessions.delete(value);
   }
 
-  removeSocketId(id: number, socket: string) {
-    const sockets = this.sessions.get(id);
-    if (sockets) {
-      const index = sockets.indexOf(socket);
-      if (index > -1) {
-        sockets.splice(index, 1);
-      }
-    }
+  removeSocketId(value: string, socket: ws.Server) {
+    this.sessions.delete(value);
   }
 
   getSockets() {
