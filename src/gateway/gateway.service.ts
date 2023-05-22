@@ -8,6 +8,8 @@ import {
 } from "@nestjs/websockets";
 import * as ws from "ws";
 import { GatewaySessionManager } from "./gateway.session";
+import { HistoryService } from "../history/history.service";
+import { CreateHistoryDto } from "../history/dto/create-history.dto";
 @Injectable()
 @WebSocketGateway()
 export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect {
@@ -15,10 +17,10 @@ export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect
   @WebSocketServer()
   server: ws.Server;
 
-  constructor(private readonly sessions: GatewaySessionManager) {
+  constructor(private readonly sessions: GatewaySessionManager ,
+              private readonly historyService: HistoryService) {
   }
 
-  private
   handleConnection(client: ws.WebSocket, ...args: any[])  {
     console.log('client connected');
     console.log(client);
@@ -29,16 +31,23 @@ export class GatewayService implements  OnGatewayConnection, OnGatewayDisconnect
   handleMessage(client: ws.WebSocket, payload: any){
     console.log('handleMessage', payload);
     this.server.clients.forEach((c) => {
-      if (c !== client) {
         console.log('send to client');
         c.send(JSON.stringify(payload));
-      }
     });
   }
 
   @SubscribeMessage('message')
-  onEvent(client: any, data: any) {
-    console.log('onEvent' ,data);
+   onEvent(client: any, payload: CreateHistoryDto) {
+    console.log('onEvent' ,payload);
+    this.server.clients.forEach(async (c) => {
+        console.log('send to client');
+        if (c !== client) {
+          await this.historyService.saveHistory(payload);
+            console.log('send to client');
+          c.send(JSON.stringify(payload));
+        }
+
+    });
   }
 
 
